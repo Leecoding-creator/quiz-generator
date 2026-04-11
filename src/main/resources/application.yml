@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: quiz
+
+# 외부에 키를 두면 소스/이미지에 비밀이 남지 않아 재배포·공유가 안전하다.
+gemini:
+  api-key: ${GEMINI_API_KEY}
+  base-url: https://generativelanguage.googleapis.com
+  model: gemini-2.0-flash
