@@ -6,4 +6,5 @@ spring:
 gemini:
   api-key: ${GEMINI_API_KEY}
   base-url: https://generativelanguage.googleapis.com
+  # Phase 1 MVP: 빠른 응답과 코드·복잡도형 프롬프트에 적합한 경량 모델
   model: gemini-2.0-flash

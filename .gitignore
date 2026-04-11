@@ -35,3 +35,21 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### 보안 - API 키 절대 올리면 안 됨 ###
+.env
+application-local.yml
+application-secret.yml
+
+### 로컬 DB ###
+*.db
+*.mv.db
+*.trace.db
+/data/
+
+### 업로드 파일 (PDF, 텍스트) ###
+/uploads/
+
+### 로그 ###
+logs/
+*.log
