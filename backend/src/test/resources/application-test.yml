@@ -1,0 +1,4 @@
+# @SpringBootTest 시 test 프로필에서 컨텍스트가 뜨도록 더미 키를 둔다 (실제 OpenAI 호출 없음).
+openai:
+  api-key: test-dummy-key
+  model: gpt-4o-mini
