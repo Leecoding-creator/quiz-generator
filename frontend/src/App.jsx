@@ -1,7 +1,8 @@
 import { useState } from 'react'
+import FileUpload from './components/FileUpload'
+import HistoryList from './components/HistoryList'
 import QuizForm from './components/QuizForm'
 import QuizList from './components/QuizList'
-import HistoryList from './components/HistoryList'
 import './App.css'
 
 function App() {
@@ -9,6 +10,7 @@ function App() {
   const [quizTopic, setQuizTopic] = useState('')
   const [isHistoryReplay, setIsHistoryReplay] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
+  const [inputTab, setInputTab] = useState('form') // 'form' | 'upload'
 
   const handleQuizGenerated = (items, topic) => {
     setIsHistoryReplay(false)
@@ -28,6 +30,8 @@ function App() {
     setQuizTopic(entry.topic ?? '')
     setQuizzes(entry.items)
   }
+
+  const showInputTabs = !showHistory && (quizzes == null || quizzes.length === 0)
 
   return (
     <div className="app-root">
@@ -53,7 +57,32 @@ function App() {
           onReset={handleResetQuizList}
         />
       ) : (
-        <QuizForm onQuizGenerated={handleQuizGenerated} />
+        <>
+          {showInputTabs && (
+            <div className="app-tabs">
+              <button
+                type="button"
+                className={`app-tab${inputTab === 'form' ? ' app-tab--active' : ''}`}
+                onClick={() => setInputTab('form')}
+              >
+                직접 입력
+              </button>
+              <button
+                type="button"
+                className={`app-tab${inputTab === 'upload' ? ' app-tab--active' : ''}`}
+                onClick={() => setInputTab('upload')}
+              >
+                파일 업로드
+              </button>
+            </div>
+          )}
+
+          {inputTab === 'form' ? (
+            <QuizForm onQuizGenerated={handleQuizGenerated} />
+          ) : (
+            <FileUpload onQuizGenerated={handleQuizGenerated} />
+          )}
+        </>
       )}
     </div>
   )

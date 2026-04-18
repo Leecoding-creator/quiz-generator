@@ -25,3 +25,35 @@
   background: #f3f4f6;
   border-color: #9ca3af;
 }
+
+.app-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid #e5e7eb;
+  max-width: 560px;
+  margin: 24px auto 0;
+  padding: 0 20px;
+}
+
+.app-tab {
+  padding: 10px 20px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  background: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.app-tab:hover {
+  color: #111827;
+}
+
+.app-tab--active {
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+  font-weight: 600;
+}

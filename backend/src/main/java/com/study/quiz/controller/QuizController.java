@@ -2,17 +2,22 @@ package com.study.quiz.controller;
 
 import java.util.List;
 
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.study.quiz.dto.QuizRequest;
 import com.study.quiz.dto.QuizResponse;
 import com.study.quiz.dto.QuizSessionSummary;
+import com.study.quiz.dto.UploadResponse;
+import com.study.quiz.service.FileUploadService;
 import com.study.quiz.service.QuizService;
 
 import jakarta.validation.Valid;
@@ -30,10 +35,16 @@ import reactor.core.publisher.Mono;
 public class QuizController {
 
 	private final QuizService quizService;
+	private final FileUploadService fileUploadService;
 
 	@PostMapping("/generate")
 	public Mono<QuizResponse> generate(@Valid @RequestBody QuizRequest request) {
 		return quizService.generateQuiz(request);
+	}
+
+	@PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public Mono<UploadResponse> upload(@RequestParam("file") MultipartFile file) {
+		return fileUploadService.processUpload(file);
 	}
 
 	@GetMapping("/history")
