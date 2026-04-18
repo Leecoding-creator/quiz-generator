@@ -28,6 +28,12 @@ public class GlobalExceptionHandler {
 				.body(Map.of("message", "입력값이 올바르지 않습니다: " + detail));
 	}
 
+	@ExceptionHandler(IllegalArgumentException.class)
+	public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException ex) {
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.body(Map.of("message", ex.getMessage()));
+	}
+
 	@ExceptionHandler(IllegalStateException.class)
 	public ResponseEntity<Map<String, String>> handleIllegalState(IllegalStateException ex) {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
