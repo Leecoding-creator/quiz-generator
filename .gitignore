@@ -53,3 +53,6 @@ application-secret.yml
 ### 로그 ###
 logs/
 *.log
+
+### Claude Code ###
+.claude/

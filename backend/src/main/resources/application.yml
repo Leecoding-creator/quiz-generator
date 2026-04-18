@@ -2,9 +2,33 @@ spring:
   application:
     name: quiz
 
-# 외부에 키를 두면 소스/이미지에 비밀이 남지 않아 재배포·공유가 안전하다.
-gemini:
-  api-key: ${GEMINI_API_KEY}
-  base-url: https://generativelanguage.googleapis.com
-  # Phase 1 MVP: 빠른 응답과 코드·복잡도형 프롬프트에 적합한 경량 모델
-  model: gemini-2.0-flash
+  datasource:
+    url: jdbc:h2:mem:quizdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+# 공통 기본값. API 키는 application-local.yml(local) 또는 배포 환경 변수로만 주입한다.
+# 로컬: SPRING_PROFILES_ACTIVE=local + OPENAI_API_KEY
+server:
+  port: 8080
+
+openai:
+  base-url: https://api.openai.com
+  model: gpt-4o-mini
+  http:
+    connect-timeout-ms: 10000
+    response-timeout-ms: 120000
