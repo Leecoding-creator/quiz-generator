@@ -2,25 +2,23 @@ import { useState } from 'react'
 import { generateQuiz } from '../api/quizApi'
 import './QuizForm.css'
 
-function QuizForm({ onQuizGenerated }) {
+function QuizForm({ onQuizGenerated, onToast }) {
   const [topic, setTopic] = useState('')
   const [difficulty, setDifficulty] = useState('easy')
   const [questionCount, setQuestionCount] = useState(10)
   const [loading, setLoading] = useState(false)
-  const [errorMessage, setErrorMessage] = useState('')
 
   const handleSubmit = async (event) => {
     event.preventDefault()
-    setErrorMessage('')
 
     try {
       setLoading(true)
-      const { items } = await generateQuiz(topic, difficulty, questionCount)
-      onQuizGenerated(items, topic)
+      const { items, sessionId } = await generateQuiz(topic, difficulty, questionCount)
+      onQuizGenerated(items, topic, sessionId)
     } catch (error) {
       const msg =
         error.response?.data?.message ?? '퀴즈 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
-      setErrorMessage(msg)
+      onToast(msg, 'error')
       console.error(error)
     } finally {
       setLoading(false)
@@ -65,10 +63,6 @@ function QuizForm({ onQuizGenerated }) {
           onChange={(event) => setQuestionCount(Number(event.target.value))}
           required
         />
-
-        {errorMessage && (
-          <p className="quiz-form-error" role="alert">{errorMessage}</p>
-        )}
 
         <button type="submit" disabled={loading}>
           {loading ? '생성 중...' : '퀴즈 생성'}

@@ -1,0 +1,266 @@
+.code-editor-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  color: #6b7280;
+  font-size: 1rem;
+}
+
+/* ── Two-panel layout ─────────────────────── */
+.code-editor-root {
+  display: flex;
+  height: calc(100vh - 108px); /* toolbar + tabs */
+  overflow: hidden;
+}
+
+/* ── Problem panel ────────────────────────── */
+.problem-panel {
+  width: 380px;
+  min-width: 280px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  padding: 20px 24px 32px;
+  border-right: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.problem-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.problem-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.problem-difficulty {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+
+.difficulty--easy   { background: #dcfce7; color: #166534; }
+.difficulty--medium { background: #fef9c3; color: #854d0e; }
+.difficulty--hard   { background: #fee2e2; color: #991b1b; }
+
+.problem-category {
+  font-size: 0.78rem;
+  color: #6b7280;
+  padding: 2px 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+}
+
+.problem-refresh-btn {
+  font-size: 0.8rem;
+  padding: 5px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #f9fafb;
+  color: #374151;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.problem-refresh-btn:hover {
+  background: #f3f4f6;
+}
+
+.problem-title {
+  margin: 0 0 10px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.problem-desc {
+  margin: 0 0 16px;
+  font-size: 0.92rem;
+  color: #374151;
+  line-height: 1.6;
+}
+
+.problem-section-title {
+  margin: 0 0 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.problem-section-body {
+  margin: 0 0 14px;
+  font-size: 0.88rem;
+  color: #4b5563;
+  line-height: 1.55;
+}
+
+.problem-io-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.problem-io-box {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #f9fafb;
+}
+
+.problem-io-label {
+  margin: 0 0 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.problem-io-pre {
+  margin: 0;
+  font-size: 0.88rem;
+  font-family: 'Fira Code', 'Consolas', monospace;
+  color: #111827;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.problem-limits {
+  display: flex;
+  gap: 16px;
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+/* ── Editor panel ─────────────────────────── */
+.editor-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #1e1e1e;
+}
+
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: #2d2d2d;
+  border-bottom: 1px solid #3e3e3e;
+}
+
+.lang-select {
+  padding: 5px 10px;
+  border: 1px solid #4b5563;
+  border-radius: 6px;
+  background: #1e1e1e;
+  color: #d4d4d4;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.submit-btn {
+  margin-left: auto;
+  padding: 7px 22px;
+  border: none;
+  border-radius: 6px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.submit-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.monaco-wrapper {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── Result panel ─────────────────────────── */
+.result-panel {
+  padding: 14px 20px;
+  border-top: 2px solid transparent;
+  background: #252526;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.result-panel--correct { border-top-color: #22c55e; }
+.result-panel--wrong   { border-top-color: #ef4444; }
+
+.result-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.result-badge {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.badge--accepted { background: #166534; color: #dcfce7; }
+.badge--wrong    { background: #991b1b; color: #fee2e2; }
+.badge--tle      { background: #92400e; color: #fef3c7; }
+.badge--error    { background: #1e1b4b; color: #e0e7ff; }
+
+.result-correct-msg {
+  font-size: 0.9rem;
+  color: #86efac;
+  font-weight: 600;
+}
+
+.result-meta {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin-left: auto;
+}
+
+.result-block {
+  margin-top: 8px;
+}
+
+.result-block--error .result-block-label { color: #f87171; }
+
+.result-block-label {
+  margin: 0 0 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.result-block-pre {
+  margin: 0;
+  padding: 8px 12px;
+  background: #1e1e1e;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-family: 'Fira Code', 'Consolas', monospace;
+  color: #d4d4d4;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
