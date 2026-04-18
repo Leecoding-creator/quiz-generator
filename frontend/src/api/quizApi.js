@@ -23,6 +23,15 @@ export async function uploadFile(file, onProgress) {
   return data
 }
 
+export async function patchSessionScore(sessionId, score, wrongIndexes) {
+  await axios.patch(`${BASE}/session/${sessionId}/score`, { score, wrongIndexes })
+}
+
+export async function retrySession(sessionId) {
+  const { data } = await axios.get(`${BASE}/retry/${sessionId}`)
+  return data
+}
+
 export async function getHistory() {
   const { data } = await axios.get(`${BASE}/history`)
   return data
@@ -30,5 +39,19 @@ export async function getHistory() {
 
 export async function getHistoryDetail(sessionId) {
   const { data } = await axios.get(`${BASE}/history/${sessionId}`)
+  return data
+}
+
+export async function fetchRandomProblem() {
+  const { data } = await axios.get('http://localhost:8080/api/problems/random')
+  return data
+}
+
+export async function submitCode(problemId, code, languageId) {
+  const { data } = await axios.post('http://localhost:8080/api/judge/submit', {
+    problemId,
+    code,
+    languageId,
+  })
   return data
 }

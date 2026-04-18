@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
+import { patchSessionScore } from '../api/quizApi'
 import { appendQuizHistory } from '../utils/quizHistoryStorage'
-import QuizRichText from './QuizRichText'
 import QuizExplanation from './QuizExplanation'
+import QuizRichText from './QuizRichText'
 import './QuizList.css'
 
 function newHistoryId() {
@@ -11,7 +12,7 @@ function newHistoryId() {
   return `quiz-${Date.now()}-${Math.random().toString(16).slice(2)}`
 }
 
-function QuizList({ items, topic = '', isHistoryReplay = false, onReset }) {
+function QuizList({ items, topic = '', sessionId = null, isHistoryReplay = false, onReset, onToast }) {
   const [userAnswers, setUserAnswers] = useState(() =>
     isHistoryReplay
       ? items.map((it) => (typeof it.userAnswer === 'number' ? it.userAnswer : null))
@@ -58,12 +59,18 @@ function QuizList({ items, topic = '', isHistoryReplay = false, onReset }) {
     })
   }
 
-  const handleSubmitScore = () => {
+  const handleSubmitScore = async () => {
     const score = items.reduce(
       (acc, item, i) => acc + (userAnswers[i] === item.correctIndex ? 1 : 0),
       0,
     )
     const totalCount = items.length
+
+    const wrongIndexes = items.reduce((acc, item, i) => {
+      if (userAnswers[i] !== item.correctIndex) acc.push(i)
+      return acc
+    }, [])
+
     const snapshotItems = items.map((item, i) => ({
       question: item.question,
       options: item.options,
@@ -85,6 +92,14 @@ function QuizList({ items, topic = '', isHistoryReplay = false, onReset }) {
     })
 
     setIsSubmitted(true)
+
+    if (sessionId) {
+      try {
+        await patchSessionScore(sessionId, score, wrongIndexes)
+      } catch {
+        onToast?.('채점 결과 저장에 실패했습니다.', 'warning')
+      }
+    }
   }
 
   const optionClassName = (questionIndex, optionIndex, item) => {

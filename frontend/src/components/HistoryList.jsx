@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getHistory, getHistoryDetail } from '../api/quizApi'
+import { getHistory, getHistoryDetail, retrySession } from '../api/quizApi'
 import './HistoryList.css'
 
 function formatDate(iso) {
@@ -13,11 +13,23 @@ function formatDate(iso) {
   }
 }
 
-function HistoryList({ onSelectEntry }) {
+function shuffle(arr) {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+function HistoryList({ onSelectEntry, onRetry, onToast }) {
   const [sessions, setSessions] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [loadingId, setLoadingId] = useState(null)
+  const [viewLoadingId, setViewLoadingId] = useState(null)
+  const [retryLoadingId, setRetryLoadingId] = useState(null)
+
+  const isBusy = viewLoadingId !== null || retryLoadingId !== null
 
   useEffect(() => {
     getHistory()
@@ -27,14 +39,28 @@ function HistoryList({ onSelectEntry }) {
   }, [])
 
   const handleSelect = async (session) => {
-    setLoadingId(session.id)
+    setViewLoadingId(session.id)
     try {
       const { items } = await getHistoryDetail(session.id)
       onSelectEntry({ topic: session.topic, items })
     } catch {
-      setError('세션 데이터를 불러오지 못했습니다.')
+      onToast?.('세션 데이터를 불러오지 못했습니다.', 'error')
     } finally {
-      setLoadingId(null)
+      setViewLoadingId(null)
+    }
+  }
+
+  const handleRetry = async (e, session) => {
+    e.stopPropagation()
+    setRetryLoadingId(session.id)
+    try {
+      const { items } = await retrySession(session.id)
+      onRetry(session.topic, shuffle(items))
+    } catch (err) {
+      const msg = err.response?.data?.message ?? '오답 문항을 불러오지 못했습니다.'
+      onToast?.(msg, 'error')
+    } finally {
+      setRetryLoadingId(null)
     }
   }
 
@@ -69,21 +95,37 @@ function HistoryList({ onSelectEntry }) {
       <ul className="history-list">
         {sessions.map((session) => (
           <li key={session.id}>
-            <button
-              type="button"
-              className="history-list-item"
-              onClick={() => handleSelect(session)}
-              disabled={loadingId !== null}
-            >
-              <span className="history-list-item-date">{formatDate(session.createdAt)}</span>
-              <span className="history-list-item-topic">{session.topic || '(주제 없음)'}</span>
-              <span className="history-list-item-meta">
-                {session.difficulty} · {session.questionCount}문항
-              </span>
-              {loadingId === session.id && (
-                <span className="history-list-item-loading">불러오는 중...</span>
+            <div className="history-list-row">
+              <button
+                type="button"
+                className="history-list-item"
+                onClick={() => handleSelect(session)}
+                disabled={isBusy}
+              >
+                <span className="history-list-item-date">{formatDate(session.createdAt)}</span>
+                <span className="history-list-item-topic">{session.topic || '(주제 없음)'}</span>
+                <span className="history-list-item-meta">
+                  {session.difficulty} · {session.questionCount}문항
+                </span>
+                {viewLoadingId === session.id && (
+                  <span className="history-list-item-loading">불러오는 중...</span>
+                )}
+              </button>
+
+              {session.wrongCount > 0 && (
+                <button
+                  type="button"
+                  className="history-retry-btn"
+                  onClick={(e) => handleRetry(e, session)}
+                  disabled={isBusy}
+                  title="틀린 문항만 다시 풀기"
+                >
+                  {retryLoadingId === session.id
+                    ? '...'
+                    : `오답 ${session.wrongCount}개 재풀기`}
+                </button>
               )}
-            </button>
+            </div>
           </li>
         ))}
       </ul>
