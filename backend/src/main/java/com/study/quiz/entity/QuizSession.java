@@ -39,4 +39,13 @@ public class QuizSession {
 
 	@Column(nullable = false)
 	private LocalDateTime createdAt;
+
+	/** 틀린 문항의 0-based 인덱스 목록을 JSON 배열로 저장 (예: "[0,2,4]"). 채점 전에는 null. */
+	@Column(columnDefinition = "TEXT")
+	private String wrongIndexes;
+
+	public void recordScore(int score, String wrongIndexes) {
+		this.score = score;
+		this.wrongIndexes = wrongIndexes;
+	}
 }

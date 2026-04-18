@@ -2,6 +2,7 @@ package com.study.quiz.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
@@ -43,8 +45,14 @@ public class QuizService {
 	private static final String SYSTEM_MESSAGE = """
 			Return only JSON that matches the given json_schema. No prose, no markdown, no code fences (no ``` or ```json).
 
-			알고리즘 관련 문제일 경우, 반드시 해당 코드의 시간 복잡도(Big-O)와 공간 복잡도 설명을 complexityAnalysis 필드에 포함하라.
-			When the item is not algorithm- or asymptotic-analysis-related, fill complexityAnalysis with one short Korean sentence that states it is not applicable.
+			[complexityAnalysis 규칙 — 반드시 준수]
+			다음 중 하나라도 해당하면 실제 Big-O를 반드시 작성하라:
+			  - 문항에 코드 스니펫(루프, 재귀, 정렬, 탐색 등)이 포함된 경우
+			  - 자료구조(스택, 큐, 힙, 트리, 그래프, 해시맵 등) 연산의 성능을 묻는 경우
+			  - 알고리즘의 실행 시간·메모리 사용량을 비교·분석하는 경우
+			형식: "시간 복잡도: O(?), 공간 복잡도: O(?)" — 이유를 한 문장으로 덧붙여도 좋다.
+			"해당 없음"은 코드·알고리즘·자료구조와 전혀 무관한 순수 개념 문항(예: 네트워크 프로토콜, OS 이론, DB 정규화 이론)에만 허용한다.
+			확신이 없으면 "해당 없음" 대신 복잡도를 분석하라.
 
 			For detailedExplanation: include why the correct option is right and why each wrong option is mistaken (reasoning, traps, complexity, or misread code). Write in Korean unless a code identifier must stay in English.
 			Structure detailedExplanation as two segments separated by a single line containing exactly "---WRONG-ANALYSIS---" (no spaces): before that line, only the correct-answer rationale; after that line, only the wrong-option analysis (reference options by number 1–4 or by paraphrase).
@@ -95,8 +103,8 @@ public class QuizService {
 				.bodyToMono(JsonNode.class)
 				.map(this::extractQuizJson)
 				.map(this::parseItems)
-				.flatMap(items -> persistSession(request, items).thenReturn(items))
-				.map(QuizResponse::new)
+				.flatMap(items -> persistSession(request, items)
+						.map(sessionId -> new QuizResponse(sessionId, items)))
 				.onErrorMap(WebClientResponseException.class, ex -> new IllegalStateException(
 						"OpenAI API 오류: " + ex.getStatusCode() + " — " + ex.getResponseBodyAsString(), ex));
 	}
@@ -113,8 +121,35 @@ public class QuizService {
 		return new QuizResponse(items);
 	}
 
-	private Mono<Void> persistSession(QuizRequest request, List<QuizItem> items) {
-		return Mono.fromRunnable(() -> {
+	@Transactional
+	public void updateScore(Long sessionId, int score, List<Integer> wrongIndexes) {
+		QuizSession session = sessionRepository.findById(sessionId)
+				.orElseThrow(() -> new IllegalArgumentException("세션을 찾을 수 없습니다: " + sessionId));
+		session.recordScore(score, serializeJson(wrongIndexes));
+	}
+
+	public QuizResponse getRetry(Long sessionId) {
+		QuizSession session = sessionRepository.findById(sessionId)
+				.orElseThrow(() -> new IllegalArgumentException("세션을 찾을 수 없습니다: " + sessionId));
+
+		List<Integer> wrongIdxs = parseWrongIndexes(session.getWrongIndexes());
+		if (wrongIdxs.isEmpty()) {
+			throw new IllegalStateException("틀린 문항이 없습니다. 채점 후 다시 시도해주세요.");
+		}
+
+		List<QuizItemEntity> allEntities = itemRepository.findBySessionId(sessionId);
+		List<QuizItem> wrongItems = new ArrayList<>();
+		for (int idx : wrongIdxs) {
+			if (idx < allEntities.size()) {
+				wrongItems.add(toQuizItem(allEntities.get(idx)));
+			}
+		}
+		Collections.shuffle(wrongItems);
+		return new QuizResponse(wrongItems);
+	}
+
+	private Mono<Long> persistSession(QuizRequest request, List<QuizItem> items) {
+		return Mono.fromCallable(() -> {
 			QuizSession session = sessionRepository.save(QuizSession.builder()
 					.topic(request.getTopic())
 					.difficulty(request.getDifficulty())
@@ -136,7 +171,25 @@ public class QuizService {
 						.build());
 			}
 			itemRepository.saveAll(entities);
-		}).subscribeOn(Schedulers.boundedElastic()).then();
+			return session.getId();
+		}).subscribeOn(Schedulers.boundedElastic());
+	}
+
+	private List<Integer> parseWrongIndexes(String json) {
+		if (json == null || json.isBlank()) return List.of();
+		try {
+			return jsonMapper.readValue(json, new TypeReference<List<Integer>>() {});
+		} catch (Exception e) {
+			return List.of();
+		}
+	}
+
+	private String serializeJson(Object value) {
+		try {
+			return jsonMapper.writeValueAsString(value);
+		} catch (Exception e) {
+			throw new IllegalStateException("JSON 직렬화 실패", e);
+		}
 	}
 
 	private String serializeOptions(List<String> options) {
@@ -240,9 +293,10 @@ public class QuizService {
 
 				MCQ. Topic: %s. Difficulty tone: %s. %s
 
-				Exactly %d items. Each: 4 distinct string options; correctIndex 0–3; explanation 2–4 sentences Korean (English terms OK); relatedConcept one short label; complexityAnalysis per system rules (Big-O time and space when algorithmic, else one short N/A sentence).
+				Exactly %d items. Each: 4 distinct string options; correctIndex 0–3; explanation 2–4 sentences Korean (English terms OK); relatedConcept one short label.
+				complexityAnalysis: code/loop/recursion/DS-operation items → "시간 복잡도: O(?), 공간 복잡도: O(?)" with actual Big-O. Pure concept items only → "해당 없음". When in doubt, write the complexity.
 				detailedExplanation: longer than explanation; must use the exact line "---WRONG-ANALYSIS---" between correct-answer rationale (before) and wrong-option analysis (after), per system message.
-				CS focus: code behavior, complexity, DS tradeoffs, pitfalls. Vary subtopics across items.
+				CS focus: code behavior, complexity, DS tradeoffs, pitfalls. Vary subtopics across items. Include at least half the items with code snippets or DS operations so complexityAnalysis is meaningful.
 				""".formatted(topic, difficulty, notes, count);
 	}
 
