@@ -1,5 +1,10 @@
 package com.study.quiz.controller;
 
+import java.util.List;
+
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -7,8 +12,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.study.quiz.dto.QuizRequest;
 import com.study.quiz.dto.QuizResponse;
+import com.study.quiz.dto.QuizSessionSummary;
 import com.study.quiz.service.QuizService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
@@ -18,13 +25,24 @@ import reactor.core.publisher.Mono;
  */
 @RestController
 @RequestMapping("/api/quiz")
+@CrossOrigin(origins = { "http://localhost:5173", "http://127.0.0.1:5173" })
 @RequiredArgsConstructor
 public class QuizController {
 
 	private final QuizService quizService;
 
 	@PostMapping("/generate")
-	public Mono<QuizResponse> generate(@RequestBody QuizRequest request) {
+	public Mono<QuizResponse> generate(@Valid @RequestBody QuizRequest request) {
 		return quizService.generateQuiz(request);
+	}
+
+	@GetMapping("/history")
+	public List<QuizSessionSummary> getHistory() {
+		return quizService.getHistory();
+	}
+
+	@GetMapping("/history/{sessionId}")
+	public QuizResponse getHistoryDetail(@PathVariable Long sessionId) {
+		return quizService.getHistoryDetail(sessionId);
 	}
 }
