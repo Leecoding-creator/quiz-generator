@@ -70,74 +70,100 @@ function App() {
 
   const showInputTabs = !showHistory && (quizzes == null || quizzes.length === 0)
 
+  const isCodingTab = !showHistory && quizzes == null && inputTab === 'coding'
+
   return (
     <div className="app-root">
-      <div className="app-toolbar">
-        {showHistory ? (
-          <button type="button" onClick={() => setShowHistory(false)}>
-            퀴즈로 돌아가기
+      {/* ── Header ── */}
+      <header className="app-header">
+        <div
+          className="app-header-brand"
+          role="button"
+          tabIndex={0}
+          onClick={() => {
+            setShowHistory(false)
+            setQuizzes(null)
+            setQuizTopic('')
+            setQuizSessionId(null)
+            setIsHistoryReplay(false)
+            setInputTab('form')
+          }}
+          onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.click()}
+        >
+          <span className="app-header-logo">UOJ</span>
+          <span className="app-header-sub">Umjun Online Judge</span>
+        </div>
+        <div className="app-header-actions">
+          <button
+            type="button"
+            className={`app-header-btn${showHistory ? ' app-header-btn--active' : ''}`}
+            onClick={() => setShowHistory((v) => !v)}
+          >
+            {showHistory ? '← 돌아가기' : '기록 보기'}
           </button>
-        ) : (
-          <button type="button" onClick={() => setShowHistory(true)}>
-            기록 보기
-          </button>
-        )}
-      </div>
+        </div>
+      </header>
 
-      {showHistory ? (
-        <HistoryList
-          onSelectEntry={handleSelectHistoryEntry}
-          onRetry={handleRetry}
-          onToast={showToast}
-        />
-      ) : quizzes != null && quizzes.length > 0 ? (
-        <QuizList
-          items={quizzes}
-          topic={quizTopic}
-          sessionId={quizSessionId}
-          isHistoryReplay={isHistoryReplay}
-          onReset={handleResetQuizList}
-          onToast={showToast}
-        />
-      ) : (
-        <>
-          {showInputTabs && (
-            <div className="app-tabs">
-              <button
-                type="button"
-                className={`app-tab${inputTab === 'form' ? ' app-tab--active' : ''}`}
-                onClick={() => setInputTab('form')}
-              >
-                직접 입력
-              </button>
-              <button
-                type="button"
-                className={`app-tab${inputTab === 'upload' ? ' app-tab--active' : ''}`}
-                onClick={() => setInputTab('upload')}
-              >
-                파일 업로드
-              </button>
-              <button
-                type="button"
-                className={`app-tab${inputTab === 'coding' ? ' app-tab--active' : ''}`}
-                onClick={() => setInputTab('coding')}
-              >
-                코딩 실기
-              </button>
-            </div>
-          )}
-
-          {inputTab === 'form' && (
-            <QuizForm onQuizGenerated={handleQuizGenerated} onToast={showToast} />
-          )}
-          {inputTab === 'upload' && (
-            <FileUpload onQuizGenerated={handleQuizGenerated} onToast={showToast} />
-          )}
-          {inputTab === 'coding' && (
-            <CodeEditor onToast={showToast} />
-          )}
-        </>
+      {/* ── Input tabs (헤더 바로 아래, 퀴즈 뷰/히스토리 뷰가 아닐 때만) ── */}
+      {showInputTabs && (
+        <div className="app-tabs-bar">
+          <div className="app-tabs">
+            <button
+              type="button"
+              className={`app-tab${inputTab === 'form' ? ' app-tab--active' : ''}`}
+              onClick={() => setInputTab('form')}
+            >
+              직접 입력
+            </button>
+            <button
+              type="button"
+              className={`app-tab${inputTab === 'upload' ? ' app-tab--active' : ''}`}
+              onClick={() => setInputTab('upload')}
+            >
+              파일 업로드
+            </button>
+            <button
+              type="button"
+              className={`app-tab${inputTab === 'coding' ? ' app-tab--active' : ''}`}
+              onClick={() => setInputTab('coding')}
+            >
+              코딩 실기
+            </button>
+          </div>
+        </div>
       )}
+
+      {/* ── Content ── */}
+      <main className={isCodingTab ? 'app-main app-main--full' : 'app-main'}>
+        {showHistory ? (
+          <HistoryList
+            onSelectEntry={handleSelectHistoryEntry}
+            onRetry={handleRetry}
+            onToast={showToast}
+          />
+        ) : quizzes != null && quizzes.length > 0 ? (
+          <QuizList
+            items={quizzes}
+            topic={quizTopic}
+            sessionId={quizSessionId}
+            isHistoryReplay={isHistoryReplay}
+            onReset={handleResetQuizList}
+            onToast={showToast}
+          />
+        ) : (
+          <>
+            {inputTab === 'form' && (
+              <QuizForm onQuizGenerated={handleQuizGenerated} onToast={showToast} />
+            )}
+            {inputTab === 'upload' && (
+              <FileUpload onQuizGenerated={handleQuizGenerated} onToast={showToast} />
+            )}
+            {inputTab === 'coding' && (
+              <CodeEditor onToast={showToast} />
+            )}
+          </>
+        )}
+      </main>
 
       <Toast toasts={toasts} onClose={dismiss} />
     </div>

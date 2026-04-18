@@ -1,59 +1,134 @@
+/* ── Reset / Base ─────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #f3f4f6;
+  color: #111827;
+  font-family: 'Pretendard', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ── App shell ────────────────────────────── */
 .app-root {
   min-height: 100vh;
-}
-
-.app-toolbar {
   display: flex;
-  justify-content: flex-end;
-  padding: 12px 20px;
-  border-bottom: 1px solid #e5e7eb;
-  background: #fafafa;
+  flex-direction: column;
 }
 
-.app-toolbar button {
-  padding: 8px 16px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  background: #fff;
-  font-size: 0.9rem;
+/* ── Header ───────────────────────────────── */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  height: 60px;
+  background: #1e3a5f;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  flex-shrink: 0;
+}
+
+.app-header-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+}
+
+.app-header-logo {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.5px;
+}
+
+.app-header-sub {
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: #93c5fd;
+  letter-spacing: 0.01em;
+}
+
+.app-header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.app-header-btn {
+  padding: 7px 16px;
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 6px;
+  background: rgba(255,255,255,0.08);
+  color: #e0e7ff;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  color: #374151;
+  transition: background 0.15s, border-color 0.15s;
 }
 
-.app-toolbar button:hover {
-  background: #f3f4f6;
-  border-color: #9ca3af;
+.app-header-btn:hover {
+  background: rgba(255,255,255,0.16);
+  border-color: rgba(255,255,255,0.45);
 }
 
+.app-header-btn--active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+
+/* ── Main content area ────────────────────── */
+.app-main {
+  flex: 1;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px 24px 48px;
+}
+
+.app-main--full {
+  max-width: 100%;
+  padding: 0;
+}
+
+/* ── Tabs bar wrapper ─────────────────────── */
+.app-tabs-bar {
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+/* ── Tabs ─────────────────────────────────── */
 .app-tabs {
   display: flex;
   gap: 0;
-  border-bottom: 2px solid #e5e7eb;
-  max-width: 560px;
-  margin: 24px auto 0;
-  padding: 0 20px;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 24px;
 }
 
 .app-tab {
-  padding: 10px 20px;
+  padding: 13px 24px;
   border: none;
-  border-bottom: 2px solid transparent;
+  border-bottom: 3px solid transparent;
   margin-bottom: -2px;
   background: none;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 500;
   color: #6b7280;
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
 }
 
 .app-tab:hover {
-  color: #111827;
+  color: #1d4ed8;
+  background: #f0f4ff;
 }
 
 .app-tab--active {
-  color: #2563eb;
+  color: #1d4ed8;
   border-bottom-color: #2563eb;
-  font-weight: 600;
+  font-weight: 700;
+  background: #f8faff;
 }

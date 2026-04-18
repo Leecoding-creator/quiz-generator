@@ -27,7 +27,6 @@ function QuizForm({ onQuizGenerated, onToast }) {
 
   return (
     <section className="quiz-form-wrapper">
-      <h1>Quiz Form</h1>
       <form className="quiz-form" onSubmit={handleSubmit}>
         <label htmlFor="topic">주제 (Topic)</label>
         <input

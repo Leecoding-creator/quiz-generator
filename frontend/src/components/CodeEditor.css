@@ -10,7 +10,7 @@
 /* ── Two-panel layout ─────────────────────── */
 .code-editor-root {
   display: flex;
-  height: calc(100vh - 108px); /* toolbar + tabs */
+  height: calc(100vh - 60px - 46px); /* header + tabs bar */
   overflow: hidden;
 }
 
